@@ -92,7 +92,6 @@ def in_box(box, target):
 
     
 def crop_for_clip(image, box, i, position):
-    image = Image.open(image)
     w, h = image.size
     if position == "left":
         bound = [0, 0, w/2, h]
@@ -115,16 +114,15 @@ def crop_for_clip(image, box, i, position):
     
     if in_box(box, bound):
         cropped_image = image.crop(box)
-        cropped_image.save(f"./temp/{i}.jpg")
-        return True
+        return True, cropped_image
     else:
-        return False
-    
-    
+        return False, None
+
+
 def clip_for_icon(clip_model, clip_preprocess, images, prompt):
     image_features = []
-    for image_file in images:
-        image = clip_preprocess(Image.open(image_file)).unsqueeze(0).to(next(clip_model.parameters()).device)
+    for image in images:
+        image = clip_preprocess(image).unsqueeze(0).to(next(clip_model.parameters()).device)
         image_feature = clip_model.encode_image(image)
         image_features.append(image_feature)
     image_features = torch.cat(image_features)
