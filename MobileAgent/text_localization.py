@@ -41,11 +41,16 @@ def ocr(image_path, prompt, ocr_detection, ocr_recognition, x, y):
     image_full = cv2.imread(image_path)
     det_result = ocr_detection(image_full)
     det_result = det_result['polygons'] 
+
+    pz = []
+    rez = []
     for i in range(det_result.shape[0]):
         pts = order_point(det_result[i])
+        pz.append(pts)
         image_crop = crop_image(image_full, pts)
         result = ocr_recognition(image_crop)['text'][0]
-        
+        rez.append(result)
+
         if result == prompt:
             box = [int(e) for e in list(pts.reshape(-1))]
             box = [box[0], box[1], box[4], box[5]]
@@ -58,11 +63,8 @@ def ocr(image_path, prompt, ocr_detection, ocr_recognition, x, y):
     
     max_length = 0
     if len(text_data) == 0:
-        for i in range(det_result.shape[0]):
-            pts = order_point(det_result[i])
-            image_crop = crop_image(image_full, pts)
-            result = ocr_recognition(image_crop)['text'][0]
-            
+        for i, pts in enumerate(pz):
+            result = rez[i]
             if len(result) < 0.3 * len(prompt):
                 continue
             
